@@ -1,11 +1,11 @@
 ﻿namespace PatchPlanner
 {
-    public class ChartEntry
+    public class FitnessChartEntry
     {
         public int Generation { get; }
         public double Fitness { get; }
 
-        public ChartEntry(int generation, double fitness)
+        public FitnessChartEntry(int generation, double fitness)
         {
             this.Generation = generation;
             this.Fitness = fitness;

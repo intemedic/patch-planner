@@ -2,9 +2,9 @@
 
 namespace PatchPlanner.PropertyEditors
 {
-    public class PopulationEditor : RadNumericUpDown
+    public class SeedEditor : RadNumericUpDown
     {
-        public PopulationEditor()
+        public SeedEditor()
         {
             this.Minimum = 10;
             this.Maximum = 1000;

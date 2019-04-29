@@ -1,113 +1,176 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace PatchPlanner
 {
     internal class Evolution : ViewModelBase
     {
-        private IEnumerable<ChartEntry> _chartData;
-        private Generation _currentGeneration;
-
+        private IEnumerable<FitnessChartEntry> _fitnessChartData;
+        private IEnumerable<PopulationChartEntry> _populationChartData;
 
         public Evolution(
-            EvolutionParameters evolutionParameters,
+            EvolutionParameters parameters,
             AnnotationCollection annotations)
         {
-            this.EvolutionParameters = evolutionParameters;
-            this.Annotations = annotations;
+            this.Parameters = parameters;
+            this.Continents = Enumerable.Range(0, parameters.Continents)
+                .Select(i => new Continent(i, parameters, annotations))
+                .ToArray();
         }
 
-        public IEnumerable<ChartEntry> ChartData
+        public EvolutionParameters Parameters { get; }
+
+        public IReadOnlyCollection<Continent> Continents { get; }
+
+        public IEnumerable<FitnessChartEntry> FitnessChartData
         {
-            get => _chartData;
+            get => _fitnessChartData;
             private set
             {
-                if (ReferenceEquals(_chartData, value))
+                if (ReferenceEquals(_fitnessChartData, value))
                 {
                     return;
                 }
 
-                _chartData = value;
+                _fitnessChartData = value;
 
-                this.RaisePropertyChanged(nameof(this.ChartData));
+                this.RaisePropertyChanged(nameof(this.FitnessChartData));
             }
         }
 
-        public EvolutionParameters EvolutionParameters { get; }
-        public AnnotationCollection Annotations { get; }
-
-        public Generation CurrentGeneration
+        public IEnumerable<PopulationChartEntry> PopulationChartData
         {
-            get => _currentGeneration;
+            get => _populationChartData;
             private set
             {
-                if (_currentGeneration == value)
+                if (ReferenceEquals(_populationChartData, value))
                 {
                     return;
                 }
 
-                _currentGeneration = value;
+                _populationChartData = value;
 
-                this.RaisePropertyChanged(nameof(this.CurrentGeneration));
+                this.RaisePropertyChanged(nameof(this.PopulationChartData));
             }
         }
 
-        public async Task StartAsync()
+        private Individual _bestFit;
+        public Individual BestFit
         {
-            var initialGeneration = this.GenerateInitialGeneration();
-            this.CurrentGeneration = initialGeneration;
-            var fitness = this.CurrentGeneration.EvaluateFitness(this.Annotations);
-            var chartData = new List<ChartEntry> {new ChartEntry(0, fitness)};
-
-            var maxFitness = fitness;
-
-            for (var i = 1; i < this.EvolutionParameters.MaxGenerationCount; ++i)
+            get => _bestFit;
+            set
             {
-                var previousGeneration = this.CurrentGeneration;
-                this.CurrentGeneration = await previousGeneration.EvoluteAsync(
-                    this.Annotations,
-                    this.EvolutionParameters);
-
-                fitness = this.CurrentGeneration.BestFit.Fitness;
-                if (fitness > maxFitness)
+                if (_bestFit == value)
                 {
-                    maxFitness = fitness;
+                    return;
+                }
+                _bestFit = value;
+
+                this.RaisePropertyChanged(nameof(this.BestFit));
+            }
+        }
+
+
+
+
+        private int _generationIndex;
+        public int GenerationIndex
+        {
+            get => _generationIndex;
+            private set
+            {
+                if (_generationIndex == value)
+                {
+                    return;
+                }
+                _generationIndex = value;
+
+                this.RaisePropertyChanged(nameof(this.GenerationIndex));
+            }
+        }
+
+
+
+        public Task StartAsync()
+        {
+            Parallel.ForEach(this.Continents, c => c.Initialize());
+
+            var maxFitness = this.Continents.Max(c => c.CurrentGeneration.BestFit.Fitness);
+
+            var fitnessChartData = new List<FitnessChartEntry>();
+            for (var i = 1; i < this.Parameters.MaxGenerationCount; ++i)
+            {
+                this.GenerationIndex = i;
+
+                if (i > this.Parameters.ConquerStartingGeneration
+                    && (i - this.Parameters.ConquerStartingGeneration) % this.Parameters.ConquerInterval == 0)
+                {
+                    var bestContinentFitness = double.MinValue;
+                    var worstContinentFitness = double.MaxValue;
+                    Continent colonist = null;
+                    Continent colony = null;
+
+                    foreach (var continent in this.Continents)
+                    {
+                        if (continent.CurrentGeneration.BestFit.Fitness > bestContinentFitness)
+                        {
+                            bestContinentFitness = continent.CurrentGeneration.BestFit.Fitness;
+                            colonist = continent;
+                        }
+
+                        if (continent.CurrentGeneration.BestFit.Fitness < worstContinentFitness)
+                        {
+                            worstContinentFitness = continent.CurrentGeneration.BestFit.Fitness;
+                            colony = continent;
+                        }
+                    }
+
+                    if (colonist != colony)
+                    {
+                        colonist.CurrentGeneration.Colonize(colony.CurrentGeneration);
+                    }
                 }
 
-                if (i % Constants.FitnessChartUpdateInterval == 0)
+                Parallel.ForEach(this.Continents, c => c.Evolve());
+
+                foreach (var continent in this.Continents)
                 {
-                    chartData.Add(new ChartEntry(i, maxFitness));
+                    if (continent.MaxFitness > maxFitness)
+                    {
+                        maxFitness = continent.CurrentGeneration.BestFit.Fitness;
+                        this.BestFit = continent.CurrentGeneration.BestFit;
+                    }
+                }
+
+                if (i * this.Parameters.Population % Constants.ChartUpdateInterval == 0)
+                {
+                    fitnessChartData.Add(new FitnessChartEntry(i, maxFitness));
                     maxFitness = 0;
 
-                    this.ChartData = chartData.ToArray();
-                }
-            }
+                    this.FitnessChartData = fitnessChartData.ToArray();
 
-            chartData.Add(new ChartEntry(this.EvolutionParameters.MaxGenerationCount - 1, maxFitness));
+                    var populationChartData = new List<PopulationChartEntry>();
+                    foreach (var continent in this.Continents)
+                    {
+                        populationChartData.AddRange(
+                            continent.CurrentGeneration.Population
+                                .Where(p => p.Fitness > 0.1)
+                                .Select(p =>
+                                new PopulationChartEntry(continent.Index, p.Fitness)));
+                    }
 
-            this.ChartData = chartData;
-        }
-
-        private Generation GenerateInitialGeneration()
-        {
-            var random = new Random();
-            var generation = new Generation(0);
-
-            for (var individualIndex = 0; individualIndex < this.EvolutionParameters.Population; ++individualIndex)
-            {
-                var patches = new List<Patch>();
-                for (var patchIndex = 0; patchIndex < this.EvolutionParameters.PatchCount; ++patchIndex)
-                {
-                    patches.Add(Patch.CreateRandom(random));
+                    this.PopulationChartData = populationChartData;
                 }
 
-                generation.Population.Add(new Individual(patches));
+                this.RaisePropertyChanged(nameof(this.Continents));
             }
 
-            generation.OnPopulationGenerated();
+            fitnessChartData.Add(new FitnessChartEntry(this.Parameters.MaxGenerationCount - 1, maxFitness));
 
-            return generation;
+            this.FitnessChartData = fitnessChartData;
+
+            return Task.CompletedTask;
         }
     }
 }

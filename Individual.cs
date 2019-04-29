@@ -9,20 +9,30 @@ namespace PatchPlanner
     [DebuggerDisplay("Fitness={" + nameof(Fitness) + "}")]
     public class Individual
     {
-        public Individual(IList<Patch> patches)
+        public Individual(Generation generation, IList<Patch> patches)
         {
+            this.Generation = generation;
             this.Patches = patches;
         }
 
+        public Generation Generation { get; }
         public IList<Patch> Patches { get; }
+
+        public int PatchCount => this.Patches.Count;
 
         public double Fitness { get; private set; }
 
         private static Random Random { get; } = new Random();
         public int Index { get; set; }
 
-        public void EvaluateFitness(AnnotationCollection annotations)
+        public void EvaluateFitness(AnnotationCollection annotations, EvolutionParameters parameters)
         {
+            if (this.Patches.Count == 0)
+            {
+                this.Fitness = 0;
+                return;
+            }
+
             var penalty = 0.0;
             foreach (var annotation in annotations)
             {
@@ -54,87 +64,104 @@ namespace PatchPlanner
                 }
             }
 
+            penalty *= 1 + ((double)this.Patches.Count / parameters.InitialPatchCount);
+
             var x = -penalty / annotations.SumArea;
 
             this.Fitness = Math.Exp(x) / (Math.Exp(x) + 1) * 2;
         }
 
-        public static Individual Crossover(Individual father, Individual mother)
+        public void Mutate(EvolutionParameters parameters)
         {
-            var patchesCount = father.Patches.Count;
-            var crossoverPoint = Random.Next(patchesCount);
-            var fatherPatches = father.Patches.OrderBy(p => p.Position.X).Take(crossoverPoint);
-            var motherPatches = mother.Patches.OrderBy(p => p.Position.X).Skip(crossoverPoint);
+            var sumMutationRate = parameters.MajorMutationRate
+                                  + parameters.MinorMutationRate
+                                  + parameters.PatchCountMutationRate;
 
-            var childPatches = fatherPatches
-                .Concat(motherPatches)
-                .ToArray();
+            var roll = Random.NextDouble() * sumMutationRate;
 
-            var fitness = (father.Fitness * crossoverPoint
-                           + mother.Fitness * (patchesCount - crossoverPoint))
-                          / patchesCount;
 
-            return new Individual(childPatches)
+            if (roll <= parameters.MajorMutationRate)
             {
-                Fitness = fitness
-            };
-        }
-
-        public void Mutate(EvolutionParameters evolutionParameters)
-        {
-            var majorMutate = Random.NextDouble() <= evolutionParameters.MajorMutationRate
-                               / (evolutionParameters.MajorMutationRate + evolutionParameters.MinorMutationRate);
-
-            var indexList = Enumerable.Range(0, this.Patches.Count).ToList();
-
-            if (majorMutate)
+                this.MajorMutate(parameters);
+            }
+            else if (roll <= parameters.MajorMutationRate + parameters.MinorMutationRate)
             {
-                Shuffle(indexList);
-
-                var majorMutationMagnitude = evolutionParameters.MajorMutationMagnitude;
-                if (evolutionParameters.AdaptiveMutation)
-                {
-                    majorMutationMagnitude /= this.Fitness;
-                }
-
-                var majorMutateCount = (int)Math.Round(majorMutationMagnitude * indexList.Count);
-                foreach (var i in indexList.Take(majorMutateCount))
-                {
-                    this.Patches[i] = Patch.CreateRandom(Random);
-                }
+                this.MinorMutate(parameters);
             }
             else
             {
-                Shuffle(indexList);
-                var minorMutateCount = (int)Math.Round(evolutionParameters.MinorMutationMagnitude * indexList.Count);
-                foreach (var i in indexList.Take(minorMutateCount))
+                this.MutatePatchCount(parameters);
+            }
+        }
+
+        private void MutatePatchCount(EvolutionParameters parameters)
+        {
+            var increase = Random.NextDouble() >= 0.5;
+            if (increase)
+            {
+                this.Patches.Add(Patch.CreateRandom(Random));
+            }
+            else
+            {
+                this.Patches.RemoveAt(Random.Next(this.Patches.Count));
+            }
+        }
+
+        private void MinorMutate(EvolutionParameters parameters)
+        {
+            var indexList = this.GenerateShuffledIndexList();
+            var minorMutateCount = (int)Math.Round(parameters.MinorMutationMagnitude * indexList.Count);
+            foreach (var i in indexList.Take(minorMutateCount))
+            {
+                var patch = this.Patches[i];
+                var newPosition = patch.Position
+                                  + new Vector(
+                                      Random.Next(Constants.PatchSize) - Constants.PatchSize / 2,
+                                      Random.Next(Constants.PatchSize) - Constants.PatchSize / 2);
+
+                if (newPosition.X < 0)
                 {
-                    var patch = this.Patches[i];
-                    var newPosition = patch.Position
-                                      + new Vector(
-                                          Random.Next(Constants.PatchSize) - Constants.PatchSize / 2,
-                                          Random.Next(Constants.PatchSize) - Constants.PatchSize / 2);
-
-                    if (newPosition.X < 0)
-                    {
-                        newPosition.X = 0;
-                    }
-                    else if (newPosition.X > Constants.PatchPositionLimit)
-                    {
-                        newPosition.X = Constants.PatchPositionLimit;
-                    }
-
-                    if (newPosition.Y < 0)
-                    {
-                        newPosition.Y = 0;
-                    }
-                    else if (newPosition.Y > Constants.PatchPositionLimit)
-                    {
-                        newPosition.Y = Constants.PatchPositionLimit;
-                    }
-
-                    this.Patches[i] = new Patch(newPosition);
+                    newPosition.X = 0;
                 }
+                else if (newPosition.X > Constants.PatchPositionLimit)
+                {
+                    newPosition.X = Constants.PatchPositionLimit;
+                }
+
+                if (newPosition.Y < 0)
+                {
+                    newPosition.Y = 0;
+                }
+                else if (newPosition.Y > Constants.PatchPositionLimit)
+                {
+                    newPosition.Y = Constants.PatchPositionLimit;
+                }
+
+                this.Patches[i] = new Patch(newPosition);
+            }
+        }
+
+        private List<int> GenerateShuffledIndexList()
+        {
+            var indexList = Enumerable.Range(0, this.Patches.Count).ToList();
+            Shuffle(indexList);
+            return indexList;
+        }
+
+        private void MajorMutate(EvolutionParameters parameters)
+        {
+            var indexList = this.GenerateShuffledIndexList();
+
+            var majorMutationMagnitude = parameters.MajorMutationMagnitude;
+            if (parameters.AdaptiveMutation)
+            {
+                majorMutationMagnitude /= this.Fitness;
+            }
+
+            var majorMutateCount = (int)Math.Round(majorMutationMagnitude * indexList.Count);
+            foreach (var i in indexList.Take(majorMutateCount))
+            {
+                this.Patches[i] = Patch.CreateRandom(Random);
             }
         }
 
@@ -153,7 +180,9 @@ namespace PatchPlanner
 
         public Individual Clone()
         {
-            return new Individual(new List<Patch>(this.Patches))
+            return new Individual(
+                this.Generation,
+                new List<Patch>(this.Patches))
             {
                 Fitness = this.Fitness
             };

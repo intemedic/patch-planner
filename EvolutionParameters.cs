@@ -10,20 +10,20 @@ namespace PatchPlanner
     public class EvolutionParameters : ViewModelBase
     {
         [Editor(typeof(PatchCountEditor), "Value")]
-        [Category("Evolution")]
-        public int PatchCount
+        [Category("Initialization")]
+        public int InitialPatchCount
         {
-            get => Settings.Default.PatchCount;
+            get => Settings.Default.InitialPatchCount;
             set
             {
-                if (Settings.Default.PatchCount == value)
+                if (Settings.Default.InitialPatchCount == value)
                 {
                     return;
                 }
-                Settings.Default.PatchCount = value;
+                Settings.Default.InitialPatchCount = value;
                 Settings.Default.Save();
 
-                this.RaisePropertyChanged(nameof(this.PatchCount));
+                this.RaisePropertyChanged(nameof(this.InitialPatchCount));
             }
         }
 
@@ -45,6 +45,25 @@ namespace PatchPlanner
             }
         }
 
+        [Editor(typeof(SeedEditor), "Value")]
+        [Category("Breeding")]
+        public int Continents
+        {
+            get => Settings.Default.Continents;
+            set
+            {
+                if (Settings.Default.Continents == value)
+                {
+                    return;
+                }
+                Settings.Default.Continents = value;
+                Settings.Default.Save();
+
+                this.RaisePropertyChanged(nameof(this.Continents));
+            }
+        }
+
+
 
         [Editor(typeof(MaxGenerationCountEditor), "Value")]
         [Category("Evolution")]
@@ -61,6 +80,42 @@ namespace PatchPlanner
                 Settings.Default.Save();
 
                 this.RaisePropertyChanged(nameof(this.MaxGenerationCount));
+            }
+        }
+
+        [Editor(typeof(ConquerIntervalEditor), "Value")]
+        [Category("Conquer")]
+        public int ConquerInterval
+        {
+            get => Settings.Default.ConquerInterval;
+            set
+            {
+                if (Settings.Default.ConquerInterval == value)
+                {
+                    return;
+                }
+                Settings.Default.ConquerInterval = value;
+                Settings.Default.Save();
+
+                this.RaisePropertyChanged(nameof(this.ConquerInterval));
+            }
+        }
+
+        [Editor(typeof(MaxGenerationCountEditor), "Value")]
+        [Category("Conquer")]
+        public int ConquerStartingGeneration
+        {
+            get => Settings.Default.ConquerStartingGeneration;
+            set
+            {
+                if (Settings.Default.ConquerStartingGeneration == value)
+                {
+                    return;
+                }
+                Settings.Default.ConquerStartingGeneration = value;
+                Settings.Default.Save();
+
+                this.RaisePropertyChanged(nameof(this.ConquerStartingGeneration));
             }
         }
 
@@ -115,6 +170,24 @@ namespace PatchPlanner
                 Settings.Default.Save();
 
                 this.RaisePropertyChanged(nameof(this.MinorMutationRate));
+            }
+        }
+
+        [Editor(typeof(MutationRateEditor), "Value")]
+        [Category("Mutation")]
+        public double PatchCountMutationRate
+        {
+            get => Settings.Default.PatchCountMutationRate;
+            set
+            {
+                if (Settings.Default.PatchCountMutationRate == value)
+                {
+                    return;
+                }
+                Settings.Default.PatchCountMutationRate = value;
+                Settings.Default.Save();
+
+                this.RaisePropertyChanged(nameof(this.PatchCountMutationRate));
             }
         }
 

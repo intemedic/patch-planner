@@ -26,12 +26,12 @@ namespace PatchPlanner {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("10")]
-        public int PatchCount {
+        public int InitialPatchCount {
             get {
-                return ((int)(this["PatchCount"]));
+                return ((int)(this["InitialPatchCount"]));
             }
             set {
-                this["PatchCount"] = value;
+                this["InitialPatchCount"] = value;
             }
         }
         
@@ -164,6 +164,54 @@ namespace PatchPlanner {
             }
             set {
                 this["MinorMutationMagnitude"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.1")]
+        public double PatchCountMutationRate {
+            get {
+                return ((double)(this["PatchCountMutationRate"]));
+            }
+            set {
+                this["PatchCountMutationRate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int Continents {
+            get {
+                return ((int)(this["Continents"]));
+            }
+            set {
+                this["Continents"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("50")]
+        public int ConquerInterval {
+            get {
+                return ((int)(this["ConquerInterval"]));
+            }
+            set {
+                this["ConquerInterval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int ConquerStartingGeneration {
+            get {
+                return ((int)(this["ConquerStartingGeneration"]));
+            }
+            set {
+                this["ConquerStartingGeneration"] = value;
             }
         }
     }

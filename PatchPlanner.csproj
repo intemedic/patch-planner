@@ -78,20 +78,26 @@
     <Compile Include="AnnotationCollection.cs" />
     <Compile Include="AnnotationManager.cs" />
     <Compile Include="BreedPool.cs" />
-    <Compile Include="ChartEntry.cs" />
+    <Compile Include="FitnessChartEntry.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Continent.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="Evolution.cs" />
     <Compile Include="EvolutionParameters.cs" />
+    <Compile Include="Family.cs" />
+    <Compile Include="IndexToBrushConverter.cs" />
     <Compile Include="Individual.cs" />
+    <Compile Include="PopulationChartEntry.cs" />
     <Compile Include="PropertyEditors\AnnotationCountEditor.cs" />
     <Compile Include="PropertyEditors\AnnotationSizeEditor.cs" />
+    <Compile Include="PropertyEditors\ConquerIntervalEditor.cs" />
     <Compile Include="PropertyEditors\KeepRateEditor.cs" />
     <Compile Include="PropertyEditors\MaxGenerationCountEditor.cs" />
     <Compile Include="PropertyEditors\MutationMagnitudeEditor.cs" />
     <Compile Include="PropertyEditors\MutationRateEditor.cs" />
     <Compile Include="PropertyEditors\PatchCountEditor.cs" />
     <Compile Include="PropertyEditors\PopulationEditor.cs" />
+    <Compile Include="PropertyEditors\SeedEditor.cs" />
     <Compile Include="RectExtensions.cs" />
     <Compile Include="Settings.Designer.cs">
       <AutoGen>True</AutoGen>

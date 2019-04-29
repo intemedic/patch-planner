@@ -6,6 +6,6 @@
         public const int PatchPositionLimit = 1024;
         public const int CanvasSize = PatchPositionLimit + PatchSize;
 
-        public const int FitnessChartUpdateInterval = 500;
+        public const int ChartUpdateInterval = 1000;
     }
 }

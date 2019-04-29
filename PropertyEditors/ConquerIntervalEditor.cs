@@ -2,14 +2,14 @@
 
 namespace PatchPlanner.PropertyEditors
 {
-    public class PopulationEditor : RadNumericUpDown
+    public class ConquerIntervalEditor : RadNumericUpDown
     {
-        public PopulationEditor()
+        public ConquerIntervalEditor()
         {
             this.Minimum = 10;
-            this.Maximum = 1000;
+            this.Maximum = 10000;
             this.IsInteger = true;
-            this.SmallChange = 10;
+            this.SmallChange = 100;
         }
     }
 }

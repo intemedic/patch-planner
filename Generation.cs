@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 namespace PatchPlanner
 {
     [DebuggerDisplay("Gen #{Index}: Best Fit={BestFit}")]
-    internal class Generation : ViewModelBase
+    public class Generation : ViewModelBase
     {
-        public Generation(int index)
+        public Generation(Continent continent, int index)
         {
+            this.Continent = continent;
             this.Index = index;
         }
 
+        public Continent Continent { get; }
         public int Index { get; }
 
         public IList<Individual> Population { get; private set; }
@@ -35,22 +37,22 @@ namespace PatchPlanner
             }
         }
 
-        public async Task<Generation> EvoluteAsync(
+        public Generation Evolve(
             AnnotationCollection annotations,
-            EvolutionParameters evolutionParameters)
+            EvolutionParameters parameters)
         {
-            var nextGeneration = new Generation(this.Index + 1);
-            nextGeneration.Breed(this, evolutionParameters);
-            await Task.Run(() => nextGeneration.EvaluateFitness(annotations));
+            var nextGeneration = new Generation(this.Continent, this.Index + 1);
+            nextGeneration.Breed(this, parameters);
+            nextGeneration.EvaluateFitness(annotations, parameters);
 
             return nextGeneration;
         }
 
-        private void Breed(Generation parentGeneration, EvolutionParameters evolutionParameters)
+        private void Breed(Generation parentGeneration, EvolutionParameters parameters)
         {
             var parentPopulation = parentGeneration.Population.OrderByDescending(i => i.Fitness).ToArray();
 
-            var keepCount = (int)Math.Round(evolutionParameters.KeepRate * parentPopulation.Length);
+            var keepCount = (int)Math.Round(parameters.KeepRate * parentPopulation.Length);
             var keptIndividuals = parentPopulation.Take(keepCount);
             foreach (var keptIndividual in keptIndividuals)
             {
@@ -59,22 +61,22 @@ namespace PatchPlanner
 
             var breedPool = new BreedPool(parentPopulation);
 
-            var childrenCount = evolutionParameters.Population - keepCount;
+            var childrenCount = parameters.Population - keepCount;
             for (var i = 0; i < childrenCount; ++i)
             {
                 var parent = breedPool.SelectParent();
                 var child = parent.Clone();
 
-                child.Mutate(evolutionParameters);
+                child.Mutate(parameters);
                 this.Population.Add(child);
             }
 
             this.OnPopulationGenerated();
         }
 
-        public double EvaluateFitness(AnnotationCollection annotations)
+        public double EvaluateFitness(AnnotationCollection annotations, EvolutionParameters parameters)
         {
-            Parallel.ForEach(this.Population, individual => individual.EvaluateFitness(annotations));
+            Parallel.ForEach(this.Population, individual => individual.EvaluateFitness(annotations, parameters));
 
             this.Population = this.Population.OrderByDescending(p => p.Fitness).ToArray();
             this.RaisePropertyChanged(nameof(this.Population));
@@ -89,6 +91,12 @@ namespace PatchPlanner
             {
                 this.Population[i].Index = i;
             }
+        }
+
+        public void Colonize(Generation native)
+        {
+            native.Population = this.Population.Select(p => p.Clone()).ToArray();
+            native.OnPopulationGenerated();
         }
     }
 }

@@ -2,7 +2,7 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PatchPlanner" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="PatchCount" Type="System.Int32" Scope="User">
+    <Setting Name="InitialPatchCount" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">10</Value>
     </Setting>
     <Setting Name="MaxGenerationCount" Type="System.Int32" Scope="User">
@@ -37,6 +37,18 @@
     </Setting>
     <Setting Name="MinorMutationMagnitude" Type="System.Double" Scope="User">
       <Value Profile="(Default)">0.1</Value>
+    </Setting>
+    <Setting Name="PatchCountMutationRate" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.1</Value>
+    </Setting>
+    <Setting Name="Continents" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="ConquerInterval" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">50</Value>
+    </Setting>
+    <Setting Name="ConquerStartingGeneration" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">100</Value>
     </Setting>
   </Settings>
 </SettingsFile>
