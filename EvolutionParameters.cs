@@ -1,7 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using PatchPlanner.PropertyEditors;
 using Telerik.Windows.Controls;
-using Telerik.Windows.Controls.Data.PropertyGrid;
+using EditorAttribute = Telerik.Windows.Controls.Data.PropertyGrid.EditorAttribute;
 
 namespace PatchPlanner
 {
@@ -9,6 +10,7 @@ namespace PatchPlanner
     public class EvolutionParameters : ViewModelBase
     {
         [Editor(typeof(PatchCountEditor), "Value")]
+        [Category("Evolution")]
         public int PatchCount
         {
             get => Settings.Default.PatchCount;
@@ -26,6 +28,7 @@ namespace PatchPlanner
         }
 
         [Editor(typeof(PopulationEditor), "Value")]
+        [Category("Breeding")]
         public int Population
         {
             get => Settings.Default.Population;
@@ -44,6 +47,7 @@ namespace PatchPlanner
 
 
         [Editor(typeof(MaxGenerationCountEditor), "Value")]
+        [Category("Evolution")]
         public int MaxGenerationCount
         {
             get => Settings.Default.MaxGenerationCount;
@@ -61,6 +65,7 @@ namespace PatchPlanner
         }
 
         [Editor(typeof(KeepRateEditor), "Value")]
+        [Category("Breeding")]
         public double KeepRate
         {
             get => Settings.Default.KeepRate;
@@ -78,22 +83,78 @@ namespace PatchPlanner
         }
 
         [Editor(typeof(MutationRateEditor), "Value")]
-        public double MutationRate
+        [Category("Mutation")]
+        public double MajorMutationRate
         {
-            get => Settings.Default.MutationRate;
+            get => Settings.Default.MajorMutationRate;
             set
             {
-                if (Settings.Default.MutationRate == value)
+                if (Settings.Default.MajorMutationRate == value)
                 {
                     return;
                 }
-                Settings.Default.MutationRate = value;
+                Settings.Default.MajorMutationRate = value;
                 Settings.Default.Save();
 
-                this.RaisePropertyChanged(nameof(this.MutationRate));
+                this.RaisePropertyChanged(nameof(this.MajorMutationRate));
             }
         }
 
+        [Editor(typeof(MutationRateEditor), "Value")]
+        [Category("Mutation")]
+        public double MinorMutationRate
+        {
+            get => Settings.Default.MinorMutationRate;
+            set
+            {
+                if (Settings.Default.MinorMutationRate == value)
+                {
+                    return;
+                }
+                Settings.Default.MinorMutationRate = value;
+                Settings.Default.Save();
+
+                this.RaisePropertyChanged(nameof(this.MinorMutationRate));
+            }
+        }
+
+        [Editor(typeof(MutationMagnitudeEditor), "Value")]
+        [Category("Mutation")]
+        public double MajorMutationMagnitude
+        {
+            get => Settings.Default.MajorMutationMagnitude;
+            set
+            {
+                if (Settings.Default.MajorMutationMagnitude == value)
+                {
+                    return;
+                }
+                Settings.Default.MajorMutationMagnitude = value;
+                Settings.Default.Save();
+
+                this.RaisePropertyChanged(nameof(this.MajorMutationMagnitude));
+            }
+        }
+
+        [Editor(typeof(MutationMagnitudeEditor), "Value")]
+        [Category("Mutation")]
+        public double MinorMutationMagnitude
+        {
+            get => Settings.Default.MinorMutationMagnitude;
+            set
+            {
+                if (Settings.Default.MinorMutationMagnitude == value)
+                {
+                    return;
+                }
+                Settings.Default.MinorMutationMagnitude = value;
+                Settings.Default.Save();
+
+                this.RaisePropertyChanged(nameof(this.MinorMutationMagnitude));
+            }
+        }
+
+        [Category("Mutation")]
         public bool AdaptiveMutation
         {
             get => Settings.Default.AdaptiveMutation;
@@ -110,6 +171,7 @@ namespace PatchPlanner
             }
         }
 
+        [Category("Breeding")]
         public bool Monogenesis
         {
             get => Settings.Default.Monogenesis;

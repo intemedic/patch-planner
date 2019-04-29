@@ -88,6 +88,7 @@
     <Compile Include="PropertyEditors\AnnotationSizeEditor.cs" />
     <Compile Include="PropertyEditors\KeepRateEditor.cs" />
     <Compile Include="PropertyEditors\MaxGenerationCountEditor.cs" />
+    <Compile Include="PropertyEditors\MutationMagnitudeEditor.cs" />
     <Compile Include="PropertyEditors\MutationRateEditor.cs" />
     <Compile Include="PropertyEditors\PatchCountEditor.cs" />
     <Compile Include="PropertyEditors\PopulationEditor.cs" />

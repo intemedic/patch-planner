@@ -62,12 +62,12 @@ namespace PatchPlanner {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0.2")]
-        public double MutationRate {
+        public double MajorMutationRate {
             get {
-                return ((double)(this["MutationRate"]));
+                return ((double)(this["MajorMutationRate"]));
             }
             set {
-                this["MutationRate"] = value;
+                this["MajorMutationRate"] = value;
             }
         }
         
@@ -140,6 +140,42 @@ namespace PatchPlanner {
             }
             set {
                 this["MinAnnotationSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.2")]
+        public double MinorMutationRate {
+            get {
+                return ((double)(this["MinorMutationRate"]));
+            }
+            set {
+                this["MinorMutationRate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.1")]
+        public double MajorMutationMagnitude {
+            get {
+                return ((double)(this["MajorMutationMagnitude"]));
+            }
+            set {
+                this["MajorMutationMagnitude"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.1")]
+        public double MinorMutationMagnitude {
+            get {
+                return ((double)(this["MinorMutationMagnitude"]));
+            }
+            set {
+                this["MinorMutationMagnitude"] = value;
             }
         }
     }

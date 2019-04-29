@@ -7,8 +7,8 @@ namespace PatchPlanner
     {
         public static Patch CreateRandom(Random random)
         {
-            var x = random.Next(Constants.CanvasSize - Constants.PatchSize);
-            var y = random.Next(Constants.CanvasSize - Constants.PatchSize);
+            var x = random.Next(Constants.PatchPositionLimit);
+            var y = random.Next(Constants.PatchPositionLimit);
             return new Patch(new Point(x, y));
         }
 

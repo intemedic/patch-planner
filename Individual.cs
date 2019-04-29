@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 
 namespace PatchPlanner
 {
@@ -79,19 +80,85 @@ namespace PatchPlanner
 
         public void Mutate(EvolutionParameters evolutionParameters)
         {
-            var indexList = Enumerable.Range(0, this.Patches.Count).ToList();
-            Shuffle(indexList);
 
-            var mutateRate = evolutionParameters.MutationRate;
-            if (evolutionParameters.AdaptiveMutation)
+            bool majorMutate;
+            bool minorMutate;
+            if (evolutionParameters.Monogenesis)
             {
-                mutateRate /= this.Fitness;
+                if (Random.NextDouble() <= evolutionParameters.MajorMutationRate
+                    / (evolutionParameters.MajorMutationRate + evolutionParameters.MinorMutationRate))
+                {
+                    majorMutate = true;
+                    minorMutate = false;
+                }
+                else
+                {
+                    majorMutate = false;
+                    minorMutate = true;
+                }
+            }
+            else
+            {
+                majorMutate = Random.NextDouble() <= evolutionParameters.MajorMutationRate;
+                minorMutate = Random.NextDouble() <= evolutionParameters.MinorMutationRate;
             }
 
-            var mutateCount = (int)Math.Round(mutateRate * indexList.Count);
-            foreach (var i in indexList.Take(mutateCount))
+            if (!majorMutate && !minorMutate)
             {
-                this.Patches[i] = Patch.CreateRandom(Random);
+                return;
+            }
+
+            var indexList = Enumerable.Range(0, this.Patches.Count).ToList();
+
+            if (majorMutate)
+            {
+                Shuffle(indexList);
+
+                var majorMutationMagnitude = evolutionParameters.MajorMutationMagnitude;
+                if (evolutionParameters.AdaptiveMutation)
+                {
+                    majorMutationMagnitude /= this.Fitness;
+                }
+
+                var majorMutateCount = (int) Math.Round(majorMutationMagnitude * indexList.Count);
+                foreach (var i in indexList.Take(majorMutateCount))
+                {
+                    this.Patches[i] = Patch.CreateRandom(Random);
+                }
+            }
+
+            if (minorMutate)
+            {
+                Shuffle(indexList);
+                var minorMutateCount = (int) Math.Round(evolutionParameters.MinorMutationMagnitude * indexList.Count);
+                foreach (var i in indexList.Take(minorMutateCount))
+                {
+                    var patch = this.Patches[i];
+                    var newPosition = patch.Position
+                                      + new Vector(
+                                          Random.Next(Constants.PatchSize) - Constants.PatchSize / 2,
+                                          Random.Next(Constants.PatchSize) - Constants.PatchSize / 2);
+
+                    if (newPosition.X < 0)
+                    {
+                        newPosition.X = 0;
+                    }
+                    else if (newPosition.X > Constants.PatchPositionLimit)
+                    {
+                        newPosition.X = Constants.PatchPositionLimit;
+                    }
+
+                    if (newPosition.Y < 0)
+                    {
+                        newPosition.Y = 0;
+                    }
+                    else if (newPosition.Y > Constants.PatchPositionLimit)
+                    {
+                        newPosition.Y = Constants.PatchPositionLimit;
+                    }
+
+                    this.Patches[i] = new Patch(newPosition);
+                }
             }
         }
 

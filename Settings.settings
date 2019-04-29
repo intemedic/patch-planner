@@ -11,7 +11,7 @@
     <Setting Name="KeepRate" Type="System.Double" Scope="User">
       <Value Profile="(Default)">0.1</Value>
     </Setting>
-    <Setting Name="MutationRate" Type="System.Double" Scope="User">
+    <Setting Name="MajorMutationRate" Type="System.Double" Scope="User">
       <Value Profile="(Default)">0.2</Value>
     </Setting>
     <Setting Name="AdaptiveMutation" Type="System.Boolean" Scope="User">
@@ -31,6 +31,15 @@
     </Setting>
     <Setting Name="MinAnnotationSize" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="MinorMutationRate" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.2</Value>
+    </Setting>
+    <Setting Name="MajorMutationMagnitude" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.1</Value>
+    </Setting>
+    <Setting Name="MinorMutationMagnitude" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.1</Value>
     </Setting>
   </Settings>
 </SettingsFile>
