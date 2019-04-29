@@ -62,18 +62,8 @@ namespace PatchPlanner
             var childrenCount = evolutionParameters.Population - keepCount;
             for (var i = 0; i < childrenCount; ++i)
             {
-                Individual child;
-                if (evolutionParameters.Monogenesis)
-                {
-                    var father = breedPool.SelectIndividual();
-                    child = father.Clone();
-                }
-                else
-                {
-                    var (father, mother) = breedPool.SelectParents();
-                    child = Individual.Crossover(father, mother);
-                }
-
+                var parent = breedPool.SelectParent();
+                var child = parent.Clone();
 
                 child.Mutate(evolutionParameters);
                 this.Population.Add(child);

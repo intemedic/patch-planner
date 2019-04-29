@@ -171,21 +171,5 @@ namespace PatchPlanner
             }
         }
 
-        [Category("Breeding")]
-        public bool Monogenesis
-        {
-            get => Settings.Default.Monogenesis;
-            set
-            {
-                if (Settings.Default.Monogenesis == value)
-                {
-                    return;
-                }
-                Settings.Default.Monogenesis = value;
-                Settings.Default.Save();
-
-                this.RaisePropertyChanged(nameof(this.Monogenesis));
-            }
-        }
     }
 }

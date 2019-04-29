@@ -18,32 +18,8 @@ namespace PatchPlanner
         public IReadOnlyList<Individual> Individuals { get; }
         public double SumFitness { get; }
 
-        private Individual SelectFather()
-        {
-            return this.SelectIndividual();
-        }
 
-        public (Individual father, Individual mother) SelectParents()
-        {
-            var father = this.SelectFather();
-            var mother = this.SelectMother(father);
-
-            return (father, mother);
-        }
-
-        private Individual SelectMother(Individual father)
-        {
-            while (true)
-            {
-                var mother = this.SelectIndividual();
-                if (mother != father)
-                {
-                    return mother;
-                }
-            }
-        }
-
-        public Individual SelectIndividual()
+        public Individual SelectParent()
         {
             var value = this.Random.NextDouble() * this.SumFitness;
 

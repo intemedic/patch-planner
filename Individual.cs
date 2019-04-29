@@ -23,7 +23,7 @@ namespace PatchPlanner
 
         public void EvaluateFitness(AnnotationCollection annotations)
         {
-            var score = 0.0;
+            var penalty = 0.0;
             foreach (var annotation in annotations)
             {
                 var patchCount = 0;
@@ -39,22 +39,24 @@ namespace PatchPlanner
                         {
                             var intersection = patch.Bounds;
                             intersection.Intersect(annotation.Bounds);
-                            score += intersection.GetArea();
+                            penalty += intersection.GetArea();
                         }
                     }
                 }
 
                 if (patchCount == 0)
                 {
-                    score += annotation.Bounds.GetArea() * 10;
+                    penalty += annotations.SumArea / annotations.Count * 10;
                 }
                 else
                 {
-                    score += annotation.Bounds.GetArea() * (patchCount - 1);
+                    penalty += annotation.Bounds.GetArea() * (patchCount - 1);
                 }
             }
 
-            this.Fitness = 1 - score / (annotations.SumArea * 5);
+            var x = -penalty / annotations.SumArea;
+
+            this.Fitness = Math.Exp(x) / (Math.Exp(x) + 1) * 2;
         }
 
         public static Individual Crossover(Individual father, Individual mother)
@@ -80,33 +82,8 @@ namespace PatchPlanner
 
         public void Mutate(EvolutionParameters evolutionParameters)
         {
-
-            bool majorMutate;
-            bool minorMutate;
-            if (evolutionParameters.Monogenesis)
-            {
-                if (Random.NextDouble() <= evolutionParameters.MajorMutationRate
-                    / (evolutionParameters.MajorMutationRate + evolutionParameters.MinorMutationRate))
-                {
-                    majorMutate = true;
-                    minorMutate = false;
-                }
-                else
-                {
-                    majorMutate = false;
-                    minorMutate = true;
-                }
-            }
-            else
-            {
-                majorMutate = Random.NextDouble() <= evolutionParameters.MajorMutationRate;
-                minorMutate = Random.NextDouble() <= evolutionParameters.MinorMutationRate;
-            }
-
-            if (!majorMutate && !minorMutate)
-            {
-                return;
-            }
+            var majorMutate = Random.NextDouble() <= evolutionParameters.MajorMutationRate
+                               / (evolutionParameters.MajorMutationRate + evolutionParameters.MinorMutationRate);
 
             var indexList = Enumerable.Range(0, this.Patches.Count).ToList();
 
@@ -120,17 +97,16 @@ namespace PatchPlanner
                     majorMutationMagnitude /= this.Fitness;
                 }
 
-                var majorMutateCount = (int) Math.Round(majorMutationMagnitude * indexList.Count);
+                var majorMutateCount = (int)Math.Round(majorMutationMagnitude * indexList.Count);
                 foreach (var i in indexList.Take(majorMutateCount))
                 {
                     this.Patches[i] = Patch.CreateRandom(Random);
                 }
             }
-
-            if (minorMutate)
+            else
             {
                 Shuffle(indexList);
-                var minorMutateCount = (int) Math.Round(evolutionParameters.MinorMutationMagnitude * indexList.Count);
+                var minorMutateCount = (int)Math.Round(evolutionParameters.MinorMutationMagnitude * indexList.Count);
                 foreach (var i in indexList.Take(minorMutateCount))
                 {
                     var patch = this.Patches[i];

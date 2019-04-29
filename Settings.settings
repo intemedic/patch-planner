@@ -17,9 +17,6 @@
     <Setting Name="AdaptiveMutation" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="Monogenesis" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
     <Setting Name="Population" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">32</Value>
     </Setting>
