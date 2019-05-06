@@ -1,0 +1,252 @@
+﻿<Window x:Class="Intemedic.PatchPlanner.Tuner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Intemedic.PatchPlanner.Tuner"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        xmlns:patchPlanner="clr-namespace:Intemedic.PatchPlanner;assembly=Intemedic.PatchPlanner.Core"
+        mc:Ignorable="d"
+        Title="Patch Planner"
+        SizeToContent="WidthAndHeight"
+        WindowState="Maximized"
+        d:DataContext="{d:DesignInstance local:MainWindowViewModel, IsDesignTimeCreatable=False}">
+
+    <Window.Resources>
+        <telerik:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    <DockPanel>
+
+        <StackPanel DockPanel.Dock="Right"
+                    Width="320"
+                    Margin="8,0,0,0">
+
+
+            <StackPanel>
+                <GroupBox Header="Annotations">
+                    <StackPanel Margin="4">
+                        <telerik:RadPropertyGrid Item="{Binding AnnotationManager}"
+                                                 NestedPropertiesVisibility="Visible"
+                                                 LabelColumnWidth="120"
+                                                 RenderMode="Flat"
+                                                 DescriptionPanelVisibility="Collapsed"
+                                                 FieldIndicatorVisibility="Collapsed">
+                        </telerik:RadPropertyGrid>
+
+                        <Button Command="{Binding AnnotationManager.RegenerateCommand}"
+                                Content="Regenerate" />
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Evolution">
+                    <StackPanel Margin="4">
+                        <telerik:RadPropertyGrid Item="{Binding EvolutionParameters}"
+                                                 NestedPropertiesVisibility="Visible"
+                                                 LabelColumnWidth="120"
+                                                 RenderMode="Hierarchical"
+                                                 DescriptionPanelVisibility="Collapsed"
+                                                 FieldIndicatorVisibility="Collapsed">
+                        </telerik:RadPropertyGrid>
+
+                        <Button Content="Start"
+                                Command="{Binding StartCommand}" />
+                    </StackPanel>
+                </GroupBox>
+
+            </StackPanel>
+
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Right"
+                    Width="320"
+                    Margin="8,0,0,0">
+
+
+            <GroupBox Header="Progress">
+                <StackPanel>
+
+                    <DockPanel Margin="8">
+                        <TextBlock DockPanel.Dock="Right"
+                                   Text="{Binding Evolution.GenerationIndex, StringFormat={}GEN #{0}}"
+                                   Margin="4,0,0,0" />
+
+                        <ProgressBar Minimum="0"
+                                     Maximum="{Binding EvolutionParameters.MaxGenerationCount, Mode=OneWay}"
+                                     Value="{Binding Evolution.GenerationIndex, Mode=OneWay}" />
+                    </DockPanel>
+
+                    <telerik:RadCartesianChart Palette="Office2016"
+                                               EmptyContent=""
+                                               Height="320">
+                        <telerik:RadCartesianChart.HorizontalAxis>
+                            <telerik:CategoricalAxis Title="Continents"
+                                                     SmartLabelsMode="SmartStep" />
+                        </telerik:RadCartesianChart.HorizontalAxis>
+                        <telerik:RadCartesianChart.VerticalAxis>
+                            <telerik:LinearAxis Minimum="0"
+                                                Maximum="1"
+                                                Title="Fitness"
+                                                LabelFormat="P0" />
+                        </telerik:RadCartesianChart.VerticalAxis>
+                        <telerik:RadCartesianChart.Grid>
+                            <telerik:CartesianChartGrid MajorLinesVisibility="Y" StripLinesVisibility="Y" />
+                        </telerik:RadCartesianChart.Grid>
+
+                        <telerik:PointSeries ItemsSource="{Binding Evolution.PopulationChartData}"
+                                             ValueBinding="Fitness"
+                                             PointSize="5,5"
+                                             CategoryBinding="ContinentIndex">
+                        </telerik:PointSeries>
+
+                    </telerik:RadCartesianChart>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="Overview">
+                <Grid>
+                    <telerik:RadCartesianChart Palette="Office2016"
+                                               EmptyContent=""
+                                               Height="320">
+                        <telerik:RadCartesianChart.HorizontalAxis>
+                            <telerik:CategoricalAxis Title="Generations"
+                                                     ShowLabels="False" />
+                        </telerik:RadCartesianChart.HorizontalAxis>
+                        <telerik:RadCartesianChart.VerticalAxis>
+                            <telerik:LinearAxis Minimum="0"
+                                                Maximum="1"
+                                                Title="Fitness"
+                                                LabelFormat="P0" />
+                        </telerik:RadCartesianChart.VerticalAxis>
+                        <telerik:RadCartesianChart.Grid>
+                            <telerik:CartesianChartGrid MajorLinesVisibility="Y" StripLinesVisibility="Y" />
+                        </telerik:RadCartesianChart.Grid>
+
+                        <telerik:LineSeries ItemsSource="{Binding Evolution.FitnessChartData}"
+                                            ValueBinding="Fitness"
+                                            CategoryBinding="Generation"
+                                            StrokeThickness="2"
+                                            Stroke="Black" />
+
+                    </telerik:RadCartesianChart>
+                </Grid>
+            </GroupBox>
+        </StackPanel>
+        <DockPanel>
+
+            <StackPanel DockPanel.Dock="Top"
+                        Orientation="Horizontal"
+                        Margin="8,8">
+                <TextBlock Text="Champion:"
+                           FontWeight="Bold" />
+                <TextBlock Margin="4,0,0,0"
+                           Text="{Binding Evolution.BestFit.Generation.Continent.Index, StringFormat={}Continent: #{0}}" />
+                <TextBlock Margin="4,0,0,0"
+                           Text="{Binding Evolution.BestFit.Fitness, StringFormat={}Fitness: {0:P1}}" />
+                <TextBlock Margin="4,0,0,0"
+                           Text="{Binding Evolution.BestFit.PatchCount, StringFormat={}Patches: {0}}" />
+            </StackPanel>
+
+            <Grid>
+                <Border BorderThickness="1"
+                        BorderBrush="Gray"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <Viewbox>
+                        <Grid Width="{Binding Source={x:Static local:Constants.CanvasSize}}"
+                              Height="{Binding Source={x:Static local:Constants.CanvasSize}}">
+                            <ItemsControl ItemsSource="{Binding AnnotationManager.Annotations}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type patchPlanner:Annotation}">
+                                        <Rectangle Stroke="Blue"
+                                                   StrokeThickness="1"
+                                                   Width="{Binding Bounds.Width}"
+                                                   Height="{Binding Bounds.Height}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding Bounds.X}" />
+                                        <Setter Property="Canvas.Top" Value="{Binding Bounds.Y}" />
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding Evolution.BestFit.Patches}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type patchPlanner:Patch}">
+                                        <Rectangle Stroke="Red"
+                                                   StrokeThickness="2"
+                                                   Width="{Binding Source={x:Static local:Constants.PatchSize}}"
+                                                   Height="{Binding Source={x:Static local:Constants.PatchSize}}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding Position.X}" />
+                                        <Setter Property="Canvas.Top" Value="{Binding Position.Y}" />
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+                            </ItemsControl>
+                            <ItemsControl ItemsSource="{Binding AnnotationManager.Annotations.AnnotationGrid.Intersections}"
+                                          Visibility="{Binding Source={x:Static local:Constants.ShowAnnotationGridIntersections}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type patchPlanner:Patch}">
+                                        <Ellipse Fill="Orange"
+                                                 Width="6"
+                                                 Height="6"
+                                                 Margin="-3,-3,0,0"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                        <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+                            </ItemsControl>
+
+                            <ItemsControl ItemsSource="{Binding AnnotationManager.Annotations.AnnotationGrid.LineSegments}"
+                                          Visibility="{Binding Source={x:Static local:Constants.ShowAnnotationGridLines}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type patchPlanner:Patch}">
+                                        <Line X1="{Binding Start.X}"
+                                              Y1="{Binding Start.Y}"
+                                              X2="{Binding End.X}"
+                                              Y2="{Binding End.Y}"
+                                              Stroke="Green"
+                                              StrokeThickness="1"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                        </Grid>
+                    </Viewbox>
+                </Border>
+            </Grid>
+        </DockPanel>
+
+
+    </DockPanel>
+</Window>
